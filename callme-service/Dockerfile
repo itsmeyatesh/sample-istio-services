@@ -1,8 +1,10 @@
-FROM openjdk:8-jre-alpine
-ENV APP_FILE callme-service-1.0.0-SNAPSHOT.jar
-ENV APP_HOME /usr/app
+FROM maven:3.5-jdk-8-alpine as build
+WORKDIR /app
+COPY .  /app
+RUN mvn install
+
+FROM maven:3.5-jdk-8-alpine
+WORKDIR /app
+COPY --from=build /app/target/callme-service-1.0.0-SNAPSHOT.jar app/callme-service-1.0.0-SNAPSHOT.jar
 EXPOSE 8091
-COPY target/$APP_FILE $APP_HOME/
-WORKDIR $APP_HOME
-ENTRYPOINT ["sh", "-c"]
-CMD ["exec java -jar $APP_FILE"]
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","app/callme-service-1.0.0-SNAPSHOT.jar"]
